@@ -8,209 +8,198 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS (For Manual GPS Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 200px; border-radius: 12px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased">
 
     <!-- Premium Navbar Header -->
     <header class="bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-800/80">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-lg flex items-center justify-center text-slate-950 font-black text-sm">1</div>
                 <div class="text-lg font-black tracking-wider text-white">ALL OF ONE <span class="text-amber-500">TNG</span></div>
             </div>
-            
             <div id="auth-badge" class="bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-500/20 flex items-center gap-1.5">
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Commande Directe via WhatsApp
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> WhatsApp Direct
             </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-12">
-        <div class="grid md:grid-cols-5 gap-8">
+    <!-- MAIN SINGLE-COLUMN ARCHITECTURE -->
+    <main class="max-w-3xl mx-auto px-4 py-8 space-y-8">
+        
+        <!-- STEP 1: INTERACTIVE GLOVO MULTI-STORE -->
+        <div id="catalog-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 transition-all duration-300 space-y-6">
             
-            <!-- LEFT PANEL (3 COLS): INTERACTIVE GLOVO MULTI-STORE -->
-            <div class="md:col-span-3 space-y-6">
-                
-                <div id="catalog-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 transition-all duration-300 max-h-[850px] overflow-y-auto space-y-6 custom-scrollbar">
-                    
-                    <!-- 4-Way Store Selector Tabs -->
-                    <div class="sticky top-0 bg-slate-900 pb-4 pt-1 z-20 border-b border-slate-800/80">
-                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-wider">Sélectionner un Restaurant</label>
-                        <div class="grid grid-cols-4 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
-                            <button type="button" id="btn-tab-mcdonalds" onclick="switchStore('mcdonalds')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 bg-amber-500 text-slate-950">
-                                <i class="fa-solid fa-hamburger"></i> <span>McDonald's</span>
-                            </button>
-                            <button type="button" id="btn-tab-osnap" onclick="switchStore('osnap')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-hotdog"></i> <span>O'Snap</span>
-                            </button>
-                            <button type="button" id="btn-tab-tchoco" onclick="switchStore('tchoco')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-bowl-food"></i> <span>Tchoco</span>
-                            </button>
-                            <button type="button" id="btn-tab-kfc" onclick="switchStore('kfc')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-drumstick-bite"></i> <span>KFC</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Dynamic Interactive Injection Window -->
-                    <div id="glovo-categories" class="space-y-6 pt-2"></div>
-                </div>
-            </div>
-
-            <!-- RIGHT PANEL (2 COLS): LIVE RECEIPT & GEOGRAPHIC DISPATCH -->
-            <div id="checkout-card" class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl h-fit transition-all duration-300">
-                <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-receipt text-orange-500"></i> Facture de Livraison (Paiement Cash)
-                </h3>
-
-                <!-- Automated Math Calculations Live Display -->
-                <div class="bg-slate-950 rounded-xl p-4 mb-4 border border-slate-800 text-xs space-y-2.5">
-                    <div class="flex justify-between text-slate-400">
-                        <span>Restaurant Actif:</span>
-                        <span id="displayVendorName" class="font-bold text-amber-500">McDonald's Morocco</span>
-                    </div>
-                    <div class="flex justify-between text-slate-400">
-                        <span>Sous-total Commande:</span>
-                        <span id="displayItemCost" class="font-bold text-white">0,00 MAD</span>
-                    </div>
-                    <div class="flex justify-between text-slate-400">
-                        <span>Frais de Livraison (Tanger):</span>
-                        <span class="font-bold text-white">20,00 MAD</span>
-                    </div>
-                    <div class="border-t border-slate-800/80 pt-2.5 flex justify-between text-white font-extrabold text-sm">
-                        <span>Total à Payer (COD):</span>
-                        <span id="displayTotal" class="text-amber-400">20,00 MAD</span>
-                    </div>
-                </div>
-
-                <!-- FORM SUBMISSION ROUTED TO WHATSAPP -->
-                <form onsubmit="sendOrderToWhatsApp(event)" class="space-y-4">
-                    
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Numéro de Téléphone</label>
-                        <input type="tel" id="clientPhone" required placeholder="Ex: 0612345678" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
-                    </div>
-
-                    <!-- GEOLOCATION INTERACTIVE MODULE -->
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
-                        <label class="block text-[10px] font-bold uppercase text-slate-500">Localisation GPS Précise</label>
-                        <button type="button" onclick="getLocation()" id="btn-geo" class="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-location-crosshairs animate-pulse"></i> <span id="geo-text">Partager ma position GPS actuelle</span>
-                        </button>
-                        <input type="text" id="displayGPS" readonly placeholder="Coordonnées non capturées" class="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 focus:outline-none text-center font-mono">
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Secteur / Quartier à Tanger</label>
-                        <select id="clientQuartier" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-400 focus:outline-none focus:border-amber-500">
-                            <option>Bendiban</option>
-                            <option>Braness</option>
-                            <option>Mwadifen</option>
-                            <option>Casabarata</option>
-                            <option>Moujamae Hassani</option>
-                            <option>Val Fleuri / Marjane</option>
-                            <option>Nejma / Centre Ville</option>
-                            <option>Ryad Tounssi</option>
-                            <option>Drissiya</option>
-                            <option>Tanja Balya</option>
-                            <option>Gzenaya</option>
-                            <option>Malabata</option>
-                            <option>Playa / Corniche</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Complément d'adresse (Rue, Résidence, Appartement)</label>
-                        <input type="text" id="clientAdresse" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500" placeholder="Ex: Résidence Al Yassmine, Bloc B, Appt 4">
-                    </div>
-
-                    <button type="submit" class="w-full cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-extrabold py-3.5 rounded-xl transition text-xs tracking-wide shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-base"></i> Envoyer la commande au livreur
+            <!-- 4-Way Store Selector Tabs -->
+            <div class="sticky top-[72px] bg-slate-900 pb-4 pt-1 z-20 border-b border-slate-800/80">
+                <label class="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-wider">Sélectionner un Restaurant</label>
+                <div class="grid grid-cols-4 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+                    <button type="button" id="btn-tab-mcdonalds" onclick="switchStore('mcdonalds')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 bg-amber-500 text-slate-950">
+                        <i class="fa-solid fa-hamburger"></i> <span>McDonald's</span>
                     </button>
-                </form>
+                    <button type="button" id="btn-tab-osnap" onclick="switchStore('osnap')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-hotdog"></i> <span>O'Snap</span>
+                    </button>
+                    <button type="button" id="btn-tab-tchoco" onclick="switchStore('tchoco')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-bowl-food"></i> <span>Tchoco</span>
+                    </button>
+                    <button type="button" id="btn-tab-kfc" onclick="switchStore('kfc')" class="py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-drumstick-bite"></i> <span>KFC</span>
+                    </button>
+                </div>
             </div>
+            
+            <!-- Dynamic Interactive Injection Window -->
+            <div id="glovo-categories" class="space-y-6 pt-2"></div>
+        </div>
+
+        <!-- STEP 2: LIVE RECEIPT & GEOGRAPHIC DISPATCH (NOW AT THE VERY BOTTOM) -->
+        <div id="checkout-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                <i class="fa-solid fa-receipt text-orange-500"></i> Facture & Validation de la Commande
+            </h3>
+
+            <!-- Automated Math Calculations Live Display -->
+            <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 text-xs space-y-2.5">
+                <div class="flex justify-between text-slate-400">
+                    <span>Restaurant Actif:</span>
+                    <span id="displayVendorName" class="font-bold text-amber-500">McDonald's Morocco</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                    <span>Sous-total Commande:</span>
+                    <span id="displayItemCost" class="font-bold text-white">0,00 MAD</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                    <span>Frais de Livraison (Tanger):</span>
+                    <span id="displayDeliveryFee" class="font-bold text-white">20,00 MAD</span>
+                </div>
+                <div class="border-t border-slate-800/80 pt-2.5 flex justify-between text-white font-extrabold text-sm">
+                    <span>Total à Payer (COD):</span>
+                    <span id="displayTotal" class="text-amber-400">20,00 MAD</span>
+                </div>
+            </div>
+
+            <!-- FORM SUBMISSION ROUTED TO WHATSAPP -->
+            <form onsubmit="sendOrderToWhatsApp(event)" class="space-y-4">
+                
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Numéro de Téléphone</label>
+                    <input type="tel" id="clientPhone" required placeholder="Ex: 0612345678" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Secteur / Quartier à Tanger</label>
+                    <select id="clientQuartier" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-400 focus:outline-none focus:border-amber-500">
+                        <option>Bendiban</option>
+                        <option>Braness</option>
+                        <option>Mwadifen</option>
+                        <option>Casabarata</option>
+                        <option>Moujamae Hassani</option>
+                        <option>Val Fleuri / Marjane</option>
+                        <option>Nejma / Centre Ville</option>
+                        <option>Ryad Tounssi</option>
+                        <option>Drissiya</option>
+                        <option>Tanja Balya</option>
+                        <option>Gzenaya</option>
+                        <option>Malabata</option>
+                        <option>Playa / Corniche</option>
+                    </select>
+                </div>
+
+                <!-- HYBRID GEOLOCATION MODULE (AUTO-CAPTURE & MANUAL MAP SELECTOR) -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-3">
+                    <label class="block text-[10px] font-bold uppercase text-slate-500">Localisation GPS (Auto ou Manuel)</label>
+                    
+                    <button type="button" onclick="getLocation()" id="btn-geo" class="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-location-crosshairs animate-pulse"></i> <span id="geo-text">Partager ma position GPS actuelle</span>
+                    </button>
+
+                    <div class="text-[10px] text-slate-500 text-center uppercase tracking-wider font-bold">ou déplacez le repère sur la carte :</div>
+                    
+                    <!-- Interactive Leaflet Container -->
+                    <div id="map" class="border border-slate-800"></div>
+                    
+                    <input type="text" id="displayGPS" readonly placeholder="Coordonnées (35.7595, -5.8340)" class="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] text-slate-400 focus:outline-none text-center font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Complément d'adresse (Rue, Résidence, Appartement)</label>
+                    <input type="text" id="clientAdresse" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500" placeholder="Ex: Résidence Al Yassmine, Bloc B, Appt 4">
+                </div>
+
+                <button type="submit" class="w-full cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-extrabold py-3.5 rounded-xl transition text-xs tracking-wide shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Envoyer la commande au livreur
+                </button>
+            </form>
         </div>
     </main>
 
-    <!-- JavaScript Interactive Automation Architecture -->
+    <!-- Leaflet JS Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // دير النمرة ديال الواتساب ديالك هنا بلاصة هادي باش يوصلوك الميساجات
-        const MY_WHATSAPP_NUMBER = "212631901459"; 
+        const MY_WHATSAPP_NUMBER = "212600000000"; 
 
         let currentActiveStore = "mcdonalds";
         let cart = {}; 
-        let gpsCoordinates = "Non partagée";
+        let gpsCoordinates = "https://www.google.com/maps?q=35.75946,-5.83395"; // الإحداثيات الافتراضية لطنجة
 
-        // جدول الأثمنة على حساب كاع المناطق اللي عندك ف اللائحة
+        // إعداد خريطة طنجة التفاعلية مانيويل
+        let defaultLat = 35.75946;
+        let defaultLng = -5.83395;
+        
+        const map = L.map('map').setView([defaultLat, defaultLng], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: 'OpenStreetMap'
+        }).addTo(map);
+
+        // إنشاء الشوكة القابلة للتحريك مانيويل
+        const marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+        function updateCoordinatesDisplay(lat, lng) {
+            gpsCoordinates = `https://www.google.com/maps?q=${lat},${lng}`;
+            document.getElementById('displayGPS').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        }
+
+        // التحديث عند جر الشوكة باليد
+        marker.on('dragend', function (e) {
+            let position = marker.getLatLng();
+            updateCoordinatesDisplay(position.lat, position.lng);
+        });
+
         const deliveryFeesByQuartier = {
-            "Bendiban": 20,
-            "Braness": 25,
-            "Mwadifen": 20,
-            "Casabarata": 20,
-            "Moujamae Hassani": 25,
-            "Val Fleuri / Marjane": 25,
-            "Nejma / Centre Ville": 30,
-            "Drissiya": 20,
-            "Playa / Corniche": 30,
-            // المناطق البعيدة كتزاد ف الثمن تلقائياً هنايا
-            "Tanja Balya": 30,
-            "Gzenaya": 35,
-            "Malabata": 30,
-            "Ryad Tounssi": 25
+            "Bendiban": 20, "Braness": 20, "Mwadifen": 20, "Casabarata": 20,
+            "Moujamae Hassani": 20, "Val Fleuri / Marjane": 20, "Nejma / Centre Ville": 20,
+            "Drissiya": 20, "Playa / Corniche": 20, "Tanja Balya": 30, "Gzenaya": 35,
+            "Malabata": 30, "Ryad Tounssi": 25
         };
 
-        const vendorNames = {
-            mcdonalds: "McDonald's Morocco",
-            osnap: "O'Snap Tacos",
-            tchoco: "Tchoco Charly",
-            kfc: "KFC Morocco"
+        const quartierCoordinates = {
+            "Bendiban": [35.7483, -5.8122], "Braness": [35.7612, -5.8245], "Mwadifen": [35.7431, -5.8010],
+            "Casabarata": [35.7548, -5.8115], "Moujamae Hassani": [35.7355, -5.8480], "Val Fleuri / Marjane": [35.7420, -5.8310],
+            "Nejma / Centre Ville": [35.7761, -5.8052], "Ryad Tounssi": [35.7720, -5.7780], "Drissiya": [35.7530, -5.7990],
+            "Tanja Balya": [35.7650, -5.7620], "Gzenaya": [35.7050, -5.8920], "Malabata": [35.7790, -5.7710], "Playa / Corniche": [35.7810, -5.7920]
         };
+
+        const vendorNames = { mcdonalds: "McDonald's Morocco", osnap: "O'Snap Tacos", tchoco: "Tchoco Charly", kfc: "KFC Morocco" };
 
         const storeCategories = {
-            mcdonalds: {
-                "mc_offres": "Menus Principaux (Standard)",
-                "mc_burgers": "Burgers & Wraps à la Carte",
-                "mc_partager": "À Partager",
-                "mc_desserts": "Glaces & Desserts",
-                "mc_frites": "Accompagnements",
-                "mc_boissons": "Boissons"
-            },
-            osnap: {
-                "os_combos": "Hot Combos (Prix Standard) 🌶️",
-                "os_riz": "Riz Crousty 🍚",
-                "os_deals": "Family Deals 🥤",
-                "os_pizzas": "Nos Pizzas 🍕",
-                "os_tacos": "Nos Tacos 🌯",
-                "os_menustacos": "Nos Menus Tacos 🍟",
-                "os_plus": "Nos Petits Plus 🍗",
-                "os_boissons": "Nos Boissons Fraîches 🧊"
-            },
-            tchoco: {
-                "tc_chawarma": "Chawarma 🌯",
-                "tc_freshbowl": "Freshbowls 🥗",
-                "tc_salades": "Salades 🥬",
-                "tc_special": "Sandwichs Spéciaux 🥖",
-                "tc_burgers": "Burgers 🍔",
-                "tc_dwichs": "Dwichs 🥖",
-                "tc_tacos": "Tacos 🌮",
-                "tc_pasticcios": "Pasticcios 🥘",
-                "tc_durums": "Durums 🌯",
-                "tc_pizzas": "Pizzas 🍕",
-                "tc_lahsas": "Lahsas 🥘",
-                "tc_extras": "Extras & Sauces 🍟"
-            },
-            kfc: {
-                "kf_buckets": "Les Buckets Partage 🍗",
-                "kf_menus": "Menus Individuels 🍟",
-                "kf_box": "Box Meals 📦",
-                "kf_carte": "À La Carte 🍔",
-                "kf_sides": "Accompagnements & Sauces 🍟",
-                "kf_boissons": "Boissons 🥤"
-            }
+            mcdonalds: { "mc_offres": "Menus Principaux", "mc_burgers": "Burgers & Wraps", "mc_partager": "À Partager", "mc_desserts": "Glaces & Desserts", "mc_frites": "Accompagnements", "mc_boissons": "Boissons" },
+            osnap: { "os_combos": "Hot Combos 🌶️", "os_riz": "Riz Crousty 🍚", "os_deals": "Family Deals 🥤", "os_pizzas": "Nos Pizzas 🍕", "os_tacos": "Nos Tacos 🌯", "os_menustacos": "Nos Menus Tacos 🍟", "os_plus": "Nos Petits Plus 🍗", "os_boissons": "Nos Boissons Fraîches 🧊" },
+            tchoco: { "tc_chawarma": "Chawarma 🌯", "tc_freshbowl": "Freshbowls 🥗", "tc_salades": "Salades 🥬", "tc_special": "Sandwichs Spéciaux 🥖", "tc_burgers": "Burgers 🍔", "tc_dwichs": "Dwichs 🥖", "tc_tacos": "Tacos 🌮", "tc_pasticcios": "Pasticcios 🥘", "tc_durums": "Durums 🌯", "tc_pizzas": "Pizzas 🍕", "tc_lahsas": "Lahsas 🥘", "tc_extras": "Extras & Sauces 🍟" },
+            kfc: { "kf_buckets": "Les Buckets Partage 🍗", "kf_menus": "Menus Individuels 🍟", "kf_box": "Box Meals 📦", "kf_carte": "À La Carte 🍔", "kf_sides": "Accompagnements 🍟", "kf_boissons": "Boissons 🥤" }
         };
 
         const storeProducts = [
-            // MCDONALD'S VENDOR SUB-MATRIX
+            // MCDONALD'S
             { id: "mc1", store: "mcdonalds", cat: "mc_offres", name: "Menu Best Of Big Tasty", price: 92 },
             { id: "mc2", store: "mcdonalds", cat: "mc_offres", name: "Menu Duo Big Mac™", price: 108 },
             { id: "mc3", store: "mcdonalds", cat: "mc_offres", name: "Menu Best Of™ Big Mac™", price: 79 },
@@ -223,8 +212,7 @@
             { id: "mc10", store: "mcdonalds", cat: "mc_desserts", name: "Golden McFlurry®", price: 34 },
             { id: "mc11", store: "mcdonalds", cat: "mc_frites", name: "Moyenne Crinkle Frites", price: 22 },
             { id: "mc12", store: "mcdonalds", cat: "mc_boissons", name: "Coca Cola® / Fanta / Sprite", price: 18 },
-
-            // O'SNAP TACOS VENDOR SUB-MATRIX
+            // O'SNAP TACOS
             { id: "os1", store: "osnap", cat: "os_combos", name: "Pizza duo + 2 boissons + 2 tiramisus", price: 245, desc: "2 Pizzas + 2 boissons + 2 Tiramisus" },
             { id: "os2", store: "osnap", cat: "os_combos", name: "Tacos XL Combo Complet", price: 185, desc: "Tacos XL + Frites + Mozza Sticks + Boisson + Tiramisu" },
             { id: "os3", store: "osnap", cat: "os_combos", name: "Tacos L Combo Complet", price: 170, desc: "Tacos L + Frites + Mozza sticks + boisson + Tiramisu" },
@@ -240,56 +228,44 @@
             { id: "os13", store: "osnap", cat: "os_menustacos", name: "Menu Tacos XL", price: 98 },
             { id: "os14", store: "osnap", cat: "os_plus", name: "Tenders Croustillants", price: 40 },
             { id: "os15", store: "osnap", cat: "os_boissons", name: "Coca / Fanta / Sprite", price: 14 },
-
-            // TCHOCO CHARLY VENDOR SUB-MATRIX 
-            { id: "tc1", store: "tchoco", cat: "tc_chawarma", name: "Chawarma Normal Avec Frites", price: 40, desc: "خص بصل كورنيشو صوص ثومية مع فريت" },
-            { id: "tc2", store: "tchoco", cat: "tc_freshbowl", name: "Fresh Bowl Tchoco", price: 80, desc: "Riz + raisin sec + salade maison + mangue + thon + crevette grise + calamar + surimi + sauce cocktail" },
-            { id: "tc3", store: "tchoco", cat: "tc_freshbowl", name: "Fresh Bowl Mixte", price: 70, desc: "Riz + Raisin sec + salade maison + shawarma + viande hachée + bacon" },
-            { id: "tc4", store: "tchoco", cat: "tc_freshbowl", name: "Fresh Bowl", price: 55, desc: "روز بي زبيب + سلاطة خاصة بي مطعم + djam shawarma + صلصة بيضاء" },
+            // TCHOCO CHARLY
+            { id: "tc1", store: "tchoco", cat: "tc_chawarma", name: "Chawarma Normal Avec Frites", price: 40 },
+            { id: "tc2", store: "tchoco", cat: "tc_freshbowl", name: "Fresh Bowl Tchoco", price: 80 },
+            { id: "tc3", store: "tchoco", cat: "tc_freshbowl", name: "Fresh Bowl Mixte", price: 70 },
+            { id: "tc4", store: "tchoco", cat: "tc_freshbowl", name: "Fresh Bowl", price: 55 },
             { id: "tc5", store: "tchoco", cat: "tc_salades", name: "Salade De Pêcheurs", price: 75 },
             { id: "tc6", store: "tchoco", cat: "tc_salades", name: "Salade César", price: 65 },
             { id: "tc7", store: "tchoco", cat: "tc_special", name: "Sandwich Pescado", price: 65 },
             { id: "tc8", store: "tchoco", cat: "tc_special", name: "Sandwich American", price: 60 },
-            { id: "tc9", store: "tchoco", cat: "tc_special", name: "Sandwich Poulet", price: 55 },
             { id: "tc10", store: "tchoco", cat: "tc_special", name: "Sandwich Poulet Crispy", price: 55 },
-            { id: "tc11", store: "tchoco", cat: "tc_special", name: "Sandwich Ton Jebn Bola", price: 45 },
             { id: "tc12", store: "tchoco", cat: "tc_burgers", name: "Hamburger Espadon", price: 80 },
             { id: "tc13", store: "tchoco", cat: "tc_burgers", name: "Hamburger Royal", price: 70 },
-            { id: "tc14", store: "tchoco", cat: "tc_burgers", name: "Hamburger Viande Hachée Au Fromage", price: 45 },
-            { id: "tc15", store: "tchoco", cat: "tc_burgers", name: "Hamburger Au Poulet", price: 45 },
+            { id: "tc14", store: "tchoco", cat: "tc_burgers", name: "Hamburger Viande Hachée", price: 45 },
             { id: "tc16", store: "tchoco", cat: "tc_dwichs", name: "Dwich Mixte", price: 85 },
             { id: "tc17", store: "tchoco", cat: "tc_dwichs", name: "Dwich Fruits De Mer", price: 80 },
-            { id: "tc18", store: "tchoco", cat: "tc_dwichs", name: "Dwich Au Poulet", price: 65 },
             { id: "tc19", store: "tchoco", cat: "tc_tacos", name: "Tacos Fruit De Mer", price: 70 },
-            { id: "tc20", store: "tchoco", cat: "tc_tacos", name: "Tacos Meghames Poulet", price: 65 },
             { id: "tc21", store: "tchoco", cat: "tc_tacos", name: "Tacos Mixte", price: 60 },
             { id: "tc22", store: "tchoco", cat: "tc_pasticcios", name: "Pasticcio Fruits De Mer", price: 70 },
             { id: "tc23", store: "tchoco", cat: "tc_pasticcios", name: "Pasticcio Royale", price: 60 },
-            { id: "tc24", store: "tchoco", cat: "tc_durums", name: "Durum Fruits De Mer", price: 75 },
             { id: "tc25", store: "tchoco", cat: "tc_pizzas", name: "Pizza Hamla Mixte", price: 90 },
-            { id: "tc26", store: "tchoco", cat: "tc_pizzas", name: "Pizza Hamla Fruit De Mer", price: 80 },
             { id: "tc27", store: "tchoco", cat: "tc_pizzas", name: "Pizza Margarita", price: 40 },
             { id: "tc28", store: "tchoco", cat: "tc_lahsas", name: "Lahsas Royal", price: 80 },
-            { id: "tc29", store: "tchoco", cat: "tc_lahsas", name: "Lahsas Bahriya", price: 80 },
-            { id: "tc30", store: "tchoco", cat: "tc_lahsas", name: "Lahsas Chekchokia", price: 60 },
             { id: "tc31", store: "tchoco", cat: "tc_extras", name: "Extra Frites", price: 15 },
-            { id: "tc32", store: "tchoco", cat: "tc_extras", name: "Extra Sauce Algérienne", price: 10 },
-
-            // KFC MOROCCO VENDOR SUB-MATRIX
-            { id: "kf1", store: "kfc", cat: "kf_buckets", name: "Bucket Partage 12 Tenders", price: 145, desc: "12 Tenders + 2 frites moyennes + 2 sauces" },
-            { id: "kf2", store: "kfc", cat: "kf_buckets", name: "Bucket Partage 9 Pcs Chicken", price: 155, desc: "9 Morceaux de poulet recette originale + 2 frites" },
-            { id: "kf3", store: "kfc", cat: "kf_buckets", name: "Bucket Mixte Mega", price: 210, desc: "6 Morceaux de poulet, 10 tenders, 3 frites, grande boisson" },
-            { id: "kf4", store: "kfc", cat: "kf_menus", name: "Menu Zinger Burger", price: 72, desc: "Zinger burger épicé, frites, boisson gazeuse" },
-            { id: "kf5", store: "kfc", cat: "kf_menus", name: "Menu Colonel Burger", price: 69, desc: "Colonel burger original, frites, boisson" },
-            { id: "kf6", store: "kfc", cat: "kf_menus", name: "Menu Twister Wrap", price: 68, desc: "Twister wrap original ou épicé, frites, boisson" },
-            { id: "kf7", store: "kfc", cat: "kf_menus", name: "Menu Mighty Zinger", price: 88, desc: "Mighty Zinger double filet, frites, boisson" },
-            { id: "kf8", store: "kfc", cat: "kf_box", name: "Box Meal Zinger", price: 89, desc: "Burger Zinger + 1 pièce de poulet + petites frites" },
-            { id: "kf9", store: "kfc", cat: "kf_box", name: "Box Meal Twister", price: 85, desc: "Twister Wrap + 2 Tenders + frites + boisson" },
+            // KFC
+            { id: "kf1", store: "kfc", cat: "kf_buckets", name: "Bucket Partage 12 Tenders", price: 145, desc: "12 Tenders + 2 frites" },
+            { id: "kf2", store: "kfc", cat: "kf_buckets", name: "Bucket Partage 9 Pcs Chicken", price: 155, desc: "9 Morceaux + 2 frites" },
+            { id: "kf3", store: "kfc", cat: "kf_buckets", name: "Bucket Mixte Mega", price: 210, desc: "6 Poulets, 10 tenders, 3 frites" },
+            { id: "kf4", store: "kfc", cat: "kf_menus", name: "Menu Zinger Burger", price: 72 },
+            { id: "kf5", store: "kfc", cat: "kf_menus", name: "Menu Colonel Burger", price: 69 },
+            { id: "kf6", store: "kfc", cat: "kf_menus", name: "Menu Twister Wrap", price: 68 },
+            { id: "kf7", store: "kfc", cat: "kf_menus", name: "Menu Mighty Zinger", price: 88 },
+            { id: "kf8", store: "kfc", cat: "kf_box", name: "Box Meal Zinger", price: 89 },
+            { id: "kf9", store: "kfc", cat: "kf_box", name: "Box Meal Twister", price: 85 },
             { id: "kf10", store: "kfc", cat: "kf_carte", name: "Zinger Burger Solo", price: 52 },
             { id: "kf11", store: "kfc", cat: "kf_carte", name: "4 Pièces Tenders Solo", price: 48 },
             { id: "kf12", store: "kfc", cat: "kf_sides", name: "Grande Frite KFC", price: 24 },
             { id: "kf13", store: "kfc", cat: "kf_sides", name: "Sauce Cob / Garlic / BBQ", price: 8 },
-            { id: "kf14", store: "kfc", cat: "kf_boissons", name: "Soda Moyen (Pepsi / Mirinda)", price: 16 }
+            { id: "kf14", store: "kfc", cat: "kf_boissons", name: "Soda Moyen", price: 16 }
         ];
 
         storeProducts.forEach(item => { cart[item.id] = 0; });
@@ -339,25 +315,15 @@
 
         function switchStore(storeKey) {
             currentActiveStore = storeKey;
-            const btnMcD = document.getElementById('btn-tab-mcdonalds');
-            const btnOsnap = document.getElementById('btn-tab-osnap');
-            const btnTchoco = document.getElementById('btn-tab-tchoco');
-            const btnKfc = document.getElementById('btn-tab-kfc');
-            
-            [btnMcD, btnOsnap, btnTchoco, btnKfc].forEach(btn => {
-                btn.className = "py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white text-center";
+            const tabs = ['mcdonalds', 'osnap', 'tchoco', 'kfc'];
+            tabs.forEach(tab => {
+                const btn = document.getElementById(`btn-tab-${tab}`);
+                if (tab === storeKey) {
+                    btn.className = "py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 bg-amber-500 text-slate-950 text-center";
+                } else {
+                    btn.className = "py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white text-center";
+                }
             });
-            
-            if (storeKey === 'mcdonalds') {
-                btnMcD.className = "py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 bg-amber-500 text-slate-950 text-center";
-            } else if (storeKey === 'osnap') {
-                btnOsnap.className = "py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 bg-amber-500 text-slate-950 text-center";
-            } else if (storeKey === 'tchoco') {
-                btnTchoco.className = "py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 bg-amber-500 text-slate-950 text-center";
-            } else {
-                btnKfc.className = "py-3 text-[10px] font-black rounded-xl transition cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 bg-amber-500 text-slate-950 text-center";
-            }
-
             document.getElementById('displayVendorName').innerText = vendorNames[storeKey];
             buildActiveVendorLayout();
             calculateInvoice();
@@ -367,9 +333,7 @@
             if (cart[id] !== undefined) {
                 cart[id] = Math.max(0, cart[id] + delta);
                 const qtyNode = document.getElementById(`qty-node-${id}`);
-                if (qtyNode) {
-                    qtyNode.innerText = cart[id];
-                }
+                if (qtyNode) qtyNode.innerText = cart[id];
                 calculateInvoice();
             }
         }
@@ -377,42 +341,44 @@
         function calculateInvoice() {
             let subtotal = 0;
             storeProducts.forEach(item => {
-                if (cart[item.id] > 0) {
-                    subtotal += item.price * cart[item.id];
-                }
+                if (cart[item.id] > 0) subtotal += item.price * cart[item.id];
             });
 
-            // تحديد ثمن التوصيل حسب الحي المختار
             const selectedQuartier = document.getElementById('clientQuartier').value;
             const deliveryFee = deliveryFeesByQuartier[selectedQuartier] || 20;
-            
             const grandTotal = subtotal === 0 ? 0 : subtotal + deliveryFee;
 
             document.getElementById('displayItemCost').innerText = `${subtotal},00 MAD`;
-            // تحديث الخانة في قائمة الحساب لايف
-            document.querySelector('#checkout-card div div:nth-child(3) span:last-child').innerText = `${deliveryFee},00 MAD`;
+            document.getElementById('displayDeliveryFee').innerText = `${deliveryFee},00 MAD`;
             document.getElementById('displayTotal').innerText = `${grandTotal},00 MAD`;
         }
 
-        // تفعيل التحديث التلقائي عند تغيير الحي
-        document.getElementById('clientQuartier').addEventListener('change', calculateInvoice);
+        // تحريك الخريطة تلقائياً للمنطقة المختارة لتسهيل التحديد المانيويل
+        document.getElementById('clientQuartier').addEventListener('change', function() {
+            const selectedQuartier = this.value;
+            calculateInvoice();
+            if (quartierCoordinates[selectedQuartier]) {
+                const coords = quartierCoordinates[selectedQuartier];
+                map.setView(coords, 14);
+                marker.setLatLng(coords);
+                updateCoordinatesDisplay(coords[0], coords[1]);
+            }
+        });
 
         function getLocation() {
             const geoText = document.getElementById('geo-text');
-            const displayGPS = document.getElementById('displayGPS');
-            
             if (navigator.geolocation) {
                 geoText.innerText = "Recherche en cours...";
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        gpsCoordinates = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
-                        displayGPS.value = `${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`;
+                        let lat = position.coords.latitude;
+                        let lng = position.coords.longitude;
+                        map.setView([lat, lng], 16);
+                        marker.setLatLng([lat, lng]);
+                        updateCoordinatesDisplay(lat, lng);
                         geoText.innerText = "Position GPS Capturée ✅";
                     },
-                    () => {
-                        geoText.innerText = "Erreur de capture GPS";
-                        gpsCoordinates = "Autorisation refusée";
-                    }
+                    () => { geoText.innerText = "Erreur (Sélectionnez sur la carte)"; }
                 );
             } else {
                 geoText.innerText = "GPS non supporté";
@@ -421,7 +387,6 @@
 
         function sendOrderToWhatsApp(event) {
             event.preventDefault();
-
             let subtotal = 0;
             let manifestItems = [];
 
@@ -440,18 +405,16 @@
             const phone = document.getElementById('clientPhone').value;
             const quartier = document.getElementById('clientQuartier').value;
             const adresse = document.getElementById('clientAdresse').value;
-            
             const deliveryFee = deliveryFeesByQuartier[quartier] || 20;
             const total = subtotal + deliveryFee;
-            const restaurant = vendorNames[currentActiveStore];
 
             let message = `*🍔 NOUVELLE COMMANDE ALL OF ONE TNG 🍔*%0A%0A`;
-            message += `*🏪 Restaurant:* ${restaurant}%0A`;
+            message += `*🏪 Restaurant:* ${vendorNames[currentActiveStore]}%0A`;
             message += `*📞 Tél Client:* ${phone}%0A%0A`;
-            message += `*📋 Détails de la commande :*%0A${manifestItems.join('%0A')}%0A%0A`;
+            message += `*📋 Détails:*%0A${manifestItems.join('%0A')}%0A%0A`;
             message += `*📍 Adresse de Livraison :*%0A`;
             message += `• Quartier: ${quartier}%0A`;
-            message += `• Complément: ${adresse}%0A`;
+            message += `• Info: ${adresse}%0A`;
             message += `• GPS: ${gpsCoordinates}%0A%0A`;
             message += `---%0A`;
             message += `*💰 Sous-Total:* ${subtotal},00 MAD%0A`;
