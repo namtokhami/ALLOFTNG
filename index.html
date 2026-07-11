@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Leaflet CSS (For Manual GPS Map) -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         #map { height: 200px; border-radius: 12px; }
@@ -35,10 +35,10 @@
     <!-- MAIN SINGLE-COLUMN ARCHITECTURE -->
     <main class="max-w-3xl mx-auto px-4 py-8 space-y-8">
         
-        <!-- STEP 1: INTERACTIVE GLOVO MULTI-STORE -->
+        <!-- STEP 1: INTERACTIVE MULTI-STORE -->
         <div id="catalog-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 transition-all duration-300 space-y-6">
             
-            <!-- 4-Way Store Selector Tabs -->
+            <!-- Store Selector Tabs -->
             <div class="sticky top-[72px] bg-slate-900 pb-4 pt-1 z-20 border-b border-slate-800/80">
                 <label class="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-wider">Sélectionner un Restaurant</label>
                 <div class="grid grid-cols-4 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -57,20 +57,20 @@
                 </div>
             </div>
             
-            <!-- Dynamic Interactive Injection Window -->
+            <!-- Dynamic Categories Injection -->
             <div id="glovo-categories" class="space-y-6 pt-2"></div>
         </div>
 
-        <!-- STEP 2: DETAILS, GEOGRAPHIC DISPATCH & LIVE RECEIPT AT THE VERY BOTTOM -->
+        <!-- STEP 2: DETAILS, GEOGRAPHIC DISPATCH & LIVE RECEIPT -->
         <div id="checkout-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6">
             <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
                 <i class="fa-solid fa-truck-fast text-orange-500"></i> Informations de Livraison & Validation
             </h3>
 
-            <!-- FORM SUBMISSION ROUTED TO WHATSAPP -->
+            <!-- FORM WITH CORRECT ORDER -->
             <form onsubmit="sendOrderToWhatsApp(event)" class="space-y-5">
                 
-                <!-- 1. SECTEUR / QUARTIER FIRST -->
+                <!-- 1. SECTEUR / QUARTIER -->
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">1. Secteur / Quartier à Tanger (Pour calculer les frais)</label>
                     <select id="clientQuartier" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
@@ -90,7 +90,7 @@
                     </select>
                 </div>
 
-                <!-- 2. HYBRID GEOLOCATION MODULE (AUTO-CAPTURE & MANUAL MAP SELECTOR) -->
+                <!-- 2. HYBRID GEOLOCATION MODULE -->
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-3">
                     <label class="block text-[10px] font-bold uppercase text-slate-400">2. Localisation GPS (Auto ou Manuel)</label>
                     
@@ -100,7 +100,7 @@
 
                     <div class="text-[10px] text-slate-500 text-center uppercase tracking-wider font-bold">ou déplacez le repère sur la carte :</div>
                     
-                    <!-- Interactive Leaflet Container -->
+                    <!-- Leaflet Container -->
                     <div id="map" class="border border-slate-800"></div>
                     
                     <input type="text" id="displayGPS" readonly placeholder="Coordonnées (35.75946, -5.83395)" class="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] text-slate-400 focus:outline-none text-center font-mono">
@@ -112,13 +112,7 @@
                     <input type="tel" id="clientPhone" required placeholder="Ex: 0612345678" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
                 </div>
 
-                <!-- 4. ADDRESS COMPLEMENT -->
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">4. Complément d'adresse (Rue, Résidence, Appartement)</label>
-                    <input type="text" id="clientAdresse" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500" placeholder="Ex: Résidence Al Yassmine, Bloc B, Appt 4">
-                </div>
-
-                <!-- 5. AUTOMATED LIVE RECEIPT (NOW AT THE VERY END BEFORE SUBMIT) -->
+                <!-- 4. AUTOMATED LIVE RECEIPT -->
                 <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 text-xs space-y-2.5">
                     <div class="text-sm font-bold text-white mb-1 flex items-center gap-1.5">
                         <i class="fa-solid fa-receipt text-amber-500"></i> Votre Facture Finale
@@ -152,14 +146,12 @@
     <!-- Leaflet JS Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // دير النمرة ديال الواتساب ديالك هنا بلاصة هادي باش يوصلوك الميساجات
         const MY_WHATSAPP_NUMBER = "212631901459"; 
 
         let currentActiveStore = "mcdonalds";
         let cart = {}; 
-        let gpsCoordinates = "https://www.google.com/maps?q=35.75946,-5.83395"; // الإحداثيات الافتراضية لطنجة
+        let gpsCoordinates = "https://www.google.com/maps?q=35.75946,-5.83395";
 
-        // إعداد خريطة طنجة التفاعلية مانيويل
         let defaultLat = 35.75946;
         let defaultLng = -5.83395;
         
@@ -168,7 +160,6 @@
             attribution: 'OpenStreetMap'
         }).addTo(map);
 
-        // إنشاء الشوكة القابلة للتحريك مانيويل
         const marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
 
         function updateCoordinatesDisplay(lat, lng) {
@@ -176,7 +167,6 @@
             document.getElementById('displayGPS').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
         }
 
-        // التحديث عند جر الشوكة باليد
         marker.on('dragend', function (e) {
             let position = marker.getLatLng();
             updateCoordinatesDisplay(position.lat, position.lng);
@@ -269,7 +259,7 @@
             { id: "kf8", store: "kfc", cat: "kf_box", name: "Box Meal Zinger", price: 89 },
             { id: "kf9", store: "kfc", cat: "kf_box", name: "Box Meal Twister", price: 85 },
             { id: "kf10", store: "kfc", cat: "kf_carte", name: "Zinger Burger Solo", price: 52 },
-            { id: "kf11", stroke: "kfc", cat: "kf_carte", name: "4 Pièces Tenders Solo", price: 48 },
+            { id: "kf11", store: "kfc", cat: "kf_carte", name: "4 Pièces Tenders Solo", price: 48 },
             { id: "kf12", store: "kfc", cat: "kf_sides", name: "Grande Frite KFC", price: 24 },
             { id: "kf13", store: "kfc", cat: "kf_sides", name: "Sauce Cob / Garlic / BBQ", price: 8 },
             { id: "kf14", store: "kfc", cat: "kf_boissons", name: "Soda Moyen", price: 16 }
@@ -410,7 +400,6 @@
 
             const phone = document.getElementById('clientPhone').value;
             const quartier = document.getElementById('clientQuartier').value;
-            const adresse = document.getElementById('clientAdresse').value;
             const deliveryFee = deliveryFeesByQuartier[quartier] || 20;
             const total = subtotal + deliveryFee;
 
@@ -420,7 +409,6 @@
             message += `*📋 Détails:*%0A${manifestItems.join('%0A')}%0A%0A`;
             message += `*📍 Adresse de Livraison :*%0A`;
             message += `• Quartier: ${quartier}%0A`;
-            message += `• Info: ${adresse}%0A`;
             message += `• GPS: ${gpsCoordinates}%0A%0A`;
             message += `---%0A`;
             message += `*💰 Sous-Total:* ${subtotal},00 MAD%0A`;
