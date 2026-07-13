@@ -17,7 +17,23 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased relative">
+
+    <!-- SUCCESS MODAL POPUP -->
+    <div id="success-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center justify-center text-2xl mx-auto animate-bounce">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="space-y-1">
+                <h4 class="text-base font-black text-white">Commande Envoyée !</h4>
+                <p class="text-xs text-slate-400">Votre commande a été transmise avec succès au livreur via WhatsApp.</p>
+            </div>
+            <button onclick="closeSuccessModal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs transition cursor-pointer">
+                Génial, merci !
+            </button>
+        </div>
+    </div>
 
     <!-- Premium Navbar Header -->
     <header class="bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-800/80">
@@ -68,7 +84,7 @@
             </h3>
 
             <!-- FORM WITH CORRECT ORDER -->
-            <form onsubmit="sendOrderToWhatsApp(event)" class="space-y-5">
+            <form id="orderForm" onsubmit="sendOrderToWhatsApp(event)" class="space-y-5">
                 
                 <!-- 1. SECTEUR / QUARTIER -->
                 <div>
@@ -146,7 +162,7 @@
     <!-- Leaflet JS Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const MY_WHATSAPP_NUMBER = "212631901459"; 
+        const MY_WHATSAPP_NUMBER = "212600000000"; 
 
         let currentActiveStore = "mcdonalds";
         let cart = {}; 
@@ -265,7 +281,10 @@
             { id: "kf14", store: "kfc", cat: "kf_boissons", name: "Soda Moyen", price: 16 }
         ];
 
-        storeProducts.forEach(item => { cart[item.id] = 0; });
+        function initCart() {
+            storeProducts.forEach(item => { cart[item.id] = 0; });
+        }
+        initCart();
 
         function buildActiveVendorLayout() {
             const container = document.getElementById('glovo-categories');
@@ -381,6 +400,22 @@
             }
         }
 
+        function resetAllFormAndCart() {
+            initCart();
+            document.getElementById('orderForm').reset();
+            buildActiveVendorLayout();
+            calculateInvoice();
+            // Reset GPS view to default
+            map.setView([defaultLat, defaultLng], 13);
+            marker.setLatLng([defaultLat, defaultLng]);
+            updateCoordinatesDisplay(defaultLat, defaultLng);
+            document.getElementById('geo-text').innerText = "Partager ma position GPS actuelle";
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+        }
+
         function sendOrderToWhatsApp(event) {
             event.preventDefault();
             let subtotal = 0;
@@ -415,7 +450,14 @@
             message += `*🛵 Frais Livraison:* ${deliveryFee},00 MAD%0A`;
             message += `*💵 TOTAL À PAYER (COD):* ${total},00 MAD`;
 
-            window.location.href = `https://wa.me/${MY_WHATSAPP_NUMBER}?text=${message}`;
+            // Open WhatsApp link in a new tab so user doesn't lose the site immediately
+            window.open(`https://wa.me/${MY_WHATSAPP_NUMBER}?text=${message}`, '_blank');
+            
+            // Show Success Alert
+            document.getElementById('success-modal').classList.remove('hidden');
+            
+            // Clear current data
+            resetAllFormAndCart();
         }
     </script>
 </body>
